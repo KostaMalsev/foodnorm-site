@@ -1,0 +1,224 @@
+<script>
+
+function init() {
+  
+  renderResults();
+
+  
+  document.querySelector('#weebly-footer-signup-container-v3').remove();
+
+}
+
+
+function renderResults() {
+  
+  let people = localStorage.getItem('people');
+  
+  if (!people) {
+    
+    window.location.href = '/';
+    
+    return;
+    
+  }
+  
+  
+  people = JSON.parse(people);
+  
+  
+  const results = getResults(people);
+  
+  const wrapperEl = document.querySelector('.wsite-section');
+  
+  
+  Object.entries(results).forEach(([key, result]) => {
+        
+    // @@debug
+    if (result === undefined) {
+      
+      result = '?';
+      
+    } else {
+      
+      result = roundTwoDecimals(result);
+      
+    }
+    
+    if (!key.startsWith('baskets')) {
+    
+      result += '₪';
+      
+    }
+    
+    wrapperEl.innerHTML = wrapperEl.innerHTML.replaceAll('[' + key + ']', result);
+    
+  });
+  
+}
+
+
+
+function getResults(people) {
+  
+  // find sum
+  
+  let sumActive = 0;
+  let sumSed = 0;
+  
+  people.forEach(person => {
+    
+    if (person.age < 2) return;
+    
+    
+    let ageGroups = monthlyCalorieIntake[person.sex];
+    
+    if (person.age <= monthlyCalorieIntake.child[0].age.max) {
+      
+      // children's sex does not affect their intake
+      ageGroups = monthlyCalorieIntake.child;
+      
+    }
+    
+    
+    let intake;
+    
+    for (let i = 0; i < ageGroups.length; i++) {
+      
+      // find the person's age group
+      
+      const ageGroup = ageGroups[i];
+      
+      let inAgeGroup = true;
+      
+      if ('min' in ageGroup.age) {
+        
+        if (ageGroup.age.min > person.age) {
+          
+          inAgeGroup = false;
+          
+        }
+        
+      }
+      
+      if ('max' in ageGroup.age) {
+        
+        if (ageGroup.age.max < person.age) {
+          
+          inAgeGroup = false;
+          
+        }
+        
+      }
+      
+      
+      if (inAgeGroup) {
+        
+        intake = ageGroup.intake;
+        
+        break;
+        
+      }
+      
+    }
+    
+    
+    sumActive += intake.active;
+    sumSed += intake.sed;
+    
+  });
+  
+  
+  const basketsActive = sumActive / caloriesPerBasket;
+  const basketsSed = sumSed / caloriesPerBasket;
+  
+  const foodNormActive = basketsActive * minBasketPrice;
+  const foodNormSed = basketsSed * minBasketPrice;
+  
+  
+  return {
+    foodNormActive,
+    foodNormSed,
+    basketsActive,
+    basketsSed
+  };
+  
+}
+
+
+
+// monthlyCalorieIntakes (FDA data)
+const monthlyCalorieIntake = {"child":[{"age":{"min":2,"max":3},"intake":{"sed":30417,"active":42583}}],"female":[{"age":{"min":4,"max":8},"intake":{"sed":36500,"active":54750}},{"age":{"min":9,"max":13},"intake":{"sed":48667,"active":66917}},{"age":{"min":14,"max":18},"intake":{"sed":54750,"active":73000}},{"age":{"min":19,"max":30},"intake":{"sed":60833,"active":73000}},{"age":{"min":31,"max":50},"intake":{"sed":54750,"active":66917}},{"age":{"min":51},"intake":{"sed":48667,"active":66917}}],"male":[{"age":{"min":4,"max":8},"intake":{"sed":42583,"active":60833}},{"age":{"min":9,"max":13},"intake":{"sed":54750,"active":79083}},{"age":{"min":14,"max":18},"intake":{"sed":66917,"active":97333}},{"age":{"min":19,"max":30},"intake":{"sed":73000,"active":91250}},{"age":{"min":31,"max":50},"intake":{"sed":73000,"active":91250}},{"age":{"min":51},"intake":{"sed":66917,"active":85167}}]};
+
+const caloriesPerBasket = 53096.57;
+
+const minBasketPrice = 692;
+
+
+
+function roundTwoDecimals(num) {
+  
+  return (Math.round((num + Number.EPSILON) * 100) / 100);
+  
+}
+
+
+window.addEventListener('load', init);
+
+</script>
+
+
+
+<style>
+
+#wsite-title {
+  font-size: 30px !important;
+}
+
+h2 {
+  font-weight: 600;
+}
+
+.wsite-button-inner {
+  font-weight: 600 !important;
+}
+
+
+.cento-header .nav-wrap {
+  display: none;
+}
+
+.footer-wrap {
+  display: none;
+}
+
+
+@font-face {
+  font-family: 'Simpler';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Simpler';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://assets.codepen.io/3537853/SimplerPro-Semibold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Simpler';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Bold.woff2') format('woff2');
+}
+
+*, #wsite-title {
+  font-family: 'Simpler', 'Quattrocento', system-ui !important;
+  letter-spacing: normal !important;
+}
+
+</style>
