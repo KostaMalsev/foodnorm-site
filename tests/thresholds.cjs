@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const script = fs.readFileSync('index.html', 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = fs.readFileSync('foodnorm.js', 'utf8');
 const ctx = vm.createContext({window: {addEventListener() {}}});
 vm.runInContext(script, ctx);
 const close = (a,b) => assert.ok(Math.abs(a-b)<1e-7, `${a} != ${b}`);
