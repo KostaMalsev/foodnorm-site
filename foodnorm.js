@@ -20,6 +20,10 @@ function renderResults() {
   let node;
   while ((node = walker.nextNode())) {
     if (node.parentElement.closest('script, style, noscript, textarea')) continue;
+    node.nodeValue = node.nodeValue
+      .replace(/תקציב\s+מינימלי\s+למזון/g, 'תקציב מינימלי לבטחון תזונתי')
+      .replace(/סל\s+נמוך/g, 'סף נמוך (מינימום השרדותי)')
+      .replace(/סל\s+גבוה/g, 'סף גבוה (מינימום מחיה בכבוד)');
     node.nodeValue = node.nodeValue.replace(/\[(foodNormActive|foodNormSed|basketsActive|basketsSed|lowActive|lowSed|highActive|highSed)\]/g, (match, key) => {
       return Math.round(results[key]).toLocaleString('en-US') + (key.startsWith('baskets') ? '' : ' ₪');
     });
