@@ -1,6 +1,6 @@
-# FoodNorm single-page Weebly calculator
+# FoodNorm script-only Weebly calculator
 
-Paste the entire `index.html` into one Weebly Embed Code block. It contains the household form, both result columns, styles, and all formulas. Remove the old separate result text/placeholders and old calculator script from that page to avoid duplicate displays.
+Paste the entire `index.html`, including its opening and closing `<script>` tags, into one Weebly Embed Code block. The file contains only a script block, not an HTML page. The script creates the household form, both result columns, and scoped styles beside the embed script, and includes all formulas. Remove the old separate result text/placeholders and old calculator script from that page to avoid duplicate displays.
 
 Visitors add household members and calculate on the same page. No redirect, separate input page, or localStorage is needed. Editing members hides previous results until recalculation. Styles are scoped to the calculator and do not modify the Weebly footer or surrounding page.
 
