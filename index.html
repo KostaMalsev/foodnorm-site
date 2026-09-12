@@ -1,46 +1,32 @@
 <script>
-// Script-only Weebly embed: mount the calculator beside this script.
-if (typeof document !== 'undefined' && !document.getElementById('foodnorm-calculator')) {
-  const embedScript = document.currentScript;
-  if (embedScript && embedScript.parentNode) {
-    const host = document.createElement('div');
-    host.innerHTML = "<div id=\"foodnorm-calculator\" dir=\"rtl\" lang=\"he\">\n  <h2>מחשבון תקציב מזון למשפחה</h2>\n  <p>הוסיפו את בני המשפחה כדי לחשב תקציב חודשי למשפחה פעילה ולא פעילה.</p>\n  <form id=\"foodnorm-form\">\n    <div id=\"foodnorm-people\"></div>\n    <button type=\"button\" id=\"foodnorm-add\">הוספת בן/בת משפחה</button>\n    <button type=\"submit\">חישוב</button>\n  </form>\n  <p id=\"foodnorm-message\" role=\"status\"></p>\n  <div id=\"foodnorm-results\" hidden aria-live=\"polite\">\n<section><h3>משפחה פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result=\"foodNormActive\">—</dd><dt>מספר סלים</dt><dd data-result=\"basketsActive\">—</dd><dt>סל נמוך (ZL)</dt><dd data-result=\"lowActive\">—</dd><dt>סל גבוה (ZU)</dt><dd data-result=\"highActive\">—</dd></dl></section><section><h3>משפחה לא פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result=\"foodNormSed\">—</dd><dt>מספר סלים</dt><dd data-result=\"basketsSed\">—</dd><dt>סל נמוך (ZL)</dt><dd data-result=\"lowSed\">—</dd><dt>סל גבוה (ZU)</dt><dd data-result=\"highSed\">—</dd></dl></section></div><p class=\"foodnorm-note\">הסכומים חודשיים לכל המשפחה, לפי מחירי הבסיס של המודל. חישוב המזון אינו כולל ילדים מתחת לגיל שנתיים.</p></div>\n<style>\n#foodnorm-calculator {max-width:860px;margin:24px auto;padding:24px;font-family:Arial,sans-serif;color:#292929;background:#fafafa;border-radius:12px;box-sizing:border-box}\n#foodnorm-calculator * {box-sizing:border-box}\n#foodnorm-calculator h2 {margin-top:0}\n#foodnorm-calculator .foodnorm-person {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:14px 0}\n#foodnorm-calculator label {display:flex;flex-direction:column;gap:6px}\n#foodnorm-calculator input,#foodnorm-calculator select {font:inherit;padding:10px;border:1px solid #999;border-radius:5px;width:140px;background:white;color:#292929}\n#foodnorm-calculator button {font:inherit;padding:10px 16px;margin:4px 0;cursor:pointer;border:1px solid #555;border-radius:5px;background:white;color:#292929}\n#foodnorm-calculator button[type=submit] {background:#235947;color:white;border-color:#235947}\n#foodnorm-calculator #foodnorm-results:not([hidden]) {display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}\n#foodnorm-calculator section {background:white;padding:20px;border:1px solid #ddd;border-radius:8px}\n#foodnorm-calculator dt {margin-top:20px;font-weight:bold}\n#foodnorm-calculator dd {margin:6px 0;font-size:1.3em}\n#foodnorm-calculator .foodnorm-note {font-size:.9em;color:#555;line-height:1.6}\n@media(max-width:540px){#foodnorm-calculator #foodnorm-results:not([hidden]){grid-template-columns:1fr}#foodnorm-calculator{padding:16px}}\n</style>\n";
-    embedScript.parentNode.insertBefore(host, embedScript);
-  }
-}
-function init() {
-  const root = document.getElementById('foodnorm-calculator');
-  if (!root || root.dataset.initialized) return;
-  root.dataset.initialized = 'true';
-  const peopleEl = root.querySelector('#foodnorm-people');
-  const resultsEl = root.querySelector('#foodnorm-results');
-  const message = root.querySelector('#foodnorm-message');
-  const invalidate = () => { resultsEl.hidden = true; message.textContent = ''; };
-  function addPerson() {
-    const row = document.createElement('div');
-    row.className = 'foodnorm-person';
-    row.innerHTML = '<label>גיל בשנים מלאות<input type="number" min="0" step="1" required aria-label="גיל בשנים מלאות"></label><label>מין<select><option value="male">זכר</option><option value="female">נקבה</option></select></label><button type="button">הסרה</button>';
-    row.querySelector('button').addEventListener('click', () => { row.remove(); invalidate(); });
-    peopleEl.appendChild(row);
-    invalidate();
-  }
-  root.querySelector('#foodnorm-add').addEventListener('click', addPerson);
-  peopleEl.addEventListener('input', invalidate);
-  peopleEl.addEventListener('change', invalidate);
-  root.querySelector('form').addEventListener('submit', event => {
-    event.preventDefault();
-    invalidate();
-    const people = Array.from(peopleEl.children, row => ({age:Number(row.querySelector('input').value),sex:row.querySelector('select').value}));
-    if (!people.length) { message.textContent = 'יש להוסיף לפחות בן/בת משפחה אחד/ת.'; return; }
-    const results = getResults(people);
-    root.querySelectorAll('[data-result]').forEach(el => {
-      const key = el.dataset.result;
-      el.textContent = new Intl.NumberFormat('he-IL', {maximumFractionDigits:2}).format(results[key]) + (key.startsWith('baskets') ? '' : ' ₪');
+// Use the household entered on the existing site and fill its result labels.
+function renderResults() {
+  let people;
+  try {
+    people = JSON.parse(localStorage.getItem('people'));
+    if (!Array.isArray(people) || people.length === 0) throw new Error('Missing household');
+    people = people.map(person => {
+      if (person.age === null || person.age === undefined || String(person.age).trim() === '') throw new Error('Missing age');
+      const age = Number(person.age);
+      if (!Number.isInteger(age) || age < 0 || !['male', 'female'].includes(person.sex)) throw new Error('Invalid household member');
+      return {age, sex:person.sex};
     });
-    resultsEl.hidden = false;
-  });
-  addPerson();
+  } catch (error) {
+    // Match the original site's flow: collect the household before showing results.
+    window.location.href = '/';
+    return;
+  }
+  const results = getResults(people);
+  const walker = document.createTreeWalker(document.body, 4); // SHOW_TEXT
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.parentElement.closest('script, style, noscript, textarea')) continue;
+    node.nodeValue = node.nodeValue.replace(/\[(foodNormActive|foodNormSed|basketsActive|basketsSed|lowActive|lowSed|highActive|highSed)\]/g, (match, key) => {
+      return String(roundTwoDecimals(results[key])) + (key.startsWith('baskets') ? '' : ' ₪');
+    });
+  }
 }
+
 function getResults(people) {
   
   // find sum
@@ -248,7 +234,7 @@ function roundTwoDecimals(num) {
 
 
 if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderResults);
+  else renderResults();
 }
 </script>
