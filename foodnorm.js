@@ -1,3 +1,4 @@
+<script>
 // Use the household entered on the existing site and fill its result labels.
 function renderResults() {
   let people;
@@ -240,3 +241,4 @@ if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderResults);
   else renderResults();
 }
+</script>
