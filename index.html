@@ -1,63 +1,64 @@
+<div id="foodnorm-calculator" dir="rtl" lang="he">
+  <h2>מחשבון תקציב מזון למשפחה</h2>
+  <p>הוסיפו את בני המשפחה כדי לחשב תקציב חודשי למשפחה פעילה ולא פעילה.</p>
+  <form id="foodnorm-form">
+    <div id="foodnorm-people"></div>
+    <button type="button" id="foodnorm-add">הוספת בן/בת משפחה</button>
+    <button type="submit">חישוב</button>
+  </form>
+  <p id="foodnorm-message" role="status"></p>
+  <div id="foodnorm-results" hidden aria-live="polite">
+<section><h3>משפחה פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormActive">—</dd><dt>מספר סלים</dt><dd data-result="basketsActive">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowActive">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highActive">—</dd></dl></section><section><h3>משפחה לא פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormSed">—</dd><dt>מספר סלים</dt><dd data-result="basketsSed">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowSed">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highSed">—</dd></dl></section></div><p class="foodnorm-note">הסכומים חודשיים לכל המשפחה, לפי מחירי הבסיס של המודל. חישוב המזון אינו כולל ילדים מתחת לגיל שנתיים.</p></div>
+<style>
+#foodnorm-calculator {max-width:860px;margin:24px auto;padding:24px;font-family:Arial,sans-serif;color:#292929;background:#fafafa;border-radius:12px;box-sizing:border-box}
+#foodnorm-calculator * {box-sizing:border-box}
+#foodnorm-calculator h2 {margin-top:0}
+#foodnorm-calculator .foodnorm-person {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:14px 0}
+#foodnorm-calculator label {display:flex;flex-direction:column;gap:6px}
+#foodnorm-calculator input,#foodnorm-calculator select {font:inherit;padding:10px;border:1px solid #999;border-radius:5px;width:140px;background:white;color:#292929}
+#foodnorm-calculator button {font:inherit;padding:10px 16px;margin:4px 0;cursor:pointer;border:1px solid #555;border-radius:5px;background:white;color:#292929}
+#foodnorm-calculator button[type=submit] {background:#235947;color:white;border-color:#235947}
+#foodnorm-calculator #foodnorm-results:not([hidden]) {display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+#foodnorm-calculator section {background:white;padding:20px;border:1px solid #ddd;border-radius:8px}
+#foodnorm-calculator dt {margin-top:20px;font-weight:bold}
+#foodnorm-calculator dd {margin:6px 0;font-size:1.3em}
+#foodnorm-calculator .foodnorm-note {font-size:.9em;color:#555;line-height:1.6}
+@media(max-width:540px){#foodnorm-calculator #foodnorm-results:not([hidden]){grid-template-columns:1fr}#foodnorm-calculator{padding:16px}}
+</style>
 <script>
-
 function init() {
-  
-  renderResults();
-
-  
-  document.querySelector('#weebly-footer-signup-container-v3').remove();
-
-}
-
-
-function renderResults() {
-  
-  let people = localStorage.getItem('people');
-  
-  if (!people) {
-    
-    window.location.href = '/';
-    
-    return;
-    
+  const root = document.getElementById('foodnorm-calculator');
+  if (!root || root.dataset.initialized) return;
+  root.dataset.initialized = 'true';
+  const peopleEl = root.querySelector('#foodnorm-people');
+  const resultsEl = root.querySelector('#foodnorm-results');
+  const message = root.querySelector('#foodnorm-message');
+  const invalidate = () => { resultsEl.hidden = true; message.textContent = ''; };
+  function addPerson() {
+    const row = document.createElement('div');
+    row.className = 'foodnorm-person';
+    row.innerHTML = '<label>גיל בשנים מלאות<input type="number" min="0" step="1" required aria-label="גיל בשנים מלאות"></label><label>מין<select><option value="male">זכר</option><option value="female">נקבה</option></select></label><button type="button">הסרה</button>';
+    row.querySelector('button').addEventListener('click', () => { row.remove(); invalidate(); });
+    peopleEl.appendChild(row);
+    invalidate();
   }
-  
-  
-  people = JSON.parse(people);
-  
-  
-  const results = getResults(people);
-  
-  const wrapperEl = document.querySelector('.wsite-section');
-  
-  
-  Object.entries(results).forEach(([key, result]) => {
-        
-    // @@debug
-    if (result === undefined) {
-      
-      result = '?';
-      
-    } else {
-      
-      result = roundTwoDecimals(result);
-      
-    }
-    
-    if (!key.startsWith('baskets')) {
-    
-      result += '₪';
-      
-    }
-    
-    wrapperEl.innerHTML = wrapperEl.innerHTML.replaceAll('[' + key + ']', result);
-    
+  root.querySelector('#foodnorm-add').addEventListener('click', addPerson);
+  peopleEl.addEventListener('input', invalidate);
+  peopleEl.addEventListener('change', invalidate);
+  root.querySelector('form').addEventListener('submit', event => {
+    event.preventDefault();
+    invalidate();
+    const people = Array.from(peopleEl.children, row => ({age:Number(row.querySelector('input').value),sex:row.querySelector('select').value}));
+    if (!people.length) { message.textContent = 'יש להוסיף לפחות בן/בת משפחה אחד/ת.'; return; }
+    const results = getResults(people);
+    root.querySelectorAll('[data-result]').forEach(el => {
+      const key = el.dataset.result;
+      el.textContent = new Intl.NumberFormat('he-IL', {maximumFractionDigits:2}).format(results[key]) + (key.startsWith('baskets') ? '' : ' ₪');
+    });
+    resultsEl.hidden = false;
   });
-  
+  addPerson();
 }
-
-
-
 function getResults(people) {
   
   // find sum
@@ -263,63 +264,9 @@ function roundTwoDecimals(num) {
 }
 
 
-window.addEventListener('load', init);
 
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}
 </script>
-
-
-
-<style>
-
-#wsite-title {
-  font-size: 30px !important;
-}
-
-h2 {
-  font-weight: 600;
-}
-
-.wsite-button-inner {
-  font-weight: 600 !important;
-}
-
-
-.cento-header .nav-wrap {
-  display: none;
-}
-
-.footer-wrap {
-  display: none;
-}
-
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro-Semibold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Bold.woff2') format('woff2');
-}
-
-*, #wsite-title {
-  font-family: 'Simpler', 'Quattrocento', system-ui !important;
-  letter-spacing: normal !important;
-}
-
-</style>
