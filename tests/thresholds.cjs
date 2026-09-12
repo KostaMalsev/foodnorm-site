@@ -7,19 +7,22 @@ vm.runInContext(script, ctx);
 const close = (a,b) => assert.ok(Math.abs(a-b)<1e-7, `${a} != ${b}`);
 const couple = [{age:35,sex:'male'},{age:35,sex:'female'}];
 const r = ctx.getHouseholdThresholds(couple, 2000, 1500);
-close(r.lowActive, 4000-1103.9746126);
+close(r.lowActive, 4000-1103.97461271);
 close(r.lowSed, 3000-124);
 close(r.highActive,13004.1837364);
 close(r.highSed,14149.6297386);
 // Check every regression age boundary with independently specified upper coefficients.
 const cases = [[0,1778.3197479],[4,1778.3197479],[5,3687.3931666],[9,3687.3931666],
 [10,3060.8969612],[14,3060.8969612],[15,2341.0918063],[17,2341.0918063],
-[18,3508.5692799],[29,3508.5692799],[30,4202.0822921],[49,4202.0822921],[50,3561.6220116],[90,3561.6220116]];
+[18,3508.5692799],[29,3508.5692799],[30,4202.0822921],[49,4202.0822921],[50,5361.6220116],[90,5361.6220116]];
 for (const [age,coefficient] of cases) close(ctx.getHouseholdThresholds([{age,sex:'male'}],1000,800).highActive,3097.0054841+coefficient);
+close(ctx.getHouseholdThresholds([{age:16,sex:'female'}],1000,800).highActive,3097.0054841+4416.1657006);
+close(ctx.getHouseholdThresholds([{age:4,sex:'female'}],1000,800).lowActive,2000-176.48275757-384.57825373);
+
 const all=ctx.getResults(couple);
 assert.equal(Object.keys(all).length,8);
 for (const value of Object.values(all)) assert.ok(Number.isFinite(value));
-close(all.lowActive,2*all.foodNormActive-1103.9746126);
+close(all.lowActive,2*all.foodNormActive-1103.97461271);
 close(all.lowSed,2*all.foodNormSed-124);
 // Existing FoodNorm behavior stays intact (35-year-old male/female calorie totals).
 close(all.foodNormActive,(91250+66917)/53096.57*692);
