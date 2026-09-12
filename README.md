@@ -1,8 +1,10 @@
-# FoodNorm script-only Weebly calculator
+# FoodNorm Weebly results script
 
-Paste the entire `index.html`, including its opening and closing `<script>` tags, into one Weebly Embed Code block. The file contains only a script block, not an HTML page. The script creates the household form, both result columns, and scoped styles beside the embed script, and includes all formulas. Remove the old separate result text/placeholders and old calculator script from that page to avoid duplicate displays.
+Replace the previous calculator script in the existing results page's Custom HTML block with all of `index.html`, including the `<script>` tags. Publish the page, enter a household on the site's original input page, then open the results page.
 
-Visitors add household members and calculate on the same page. No redirect, separate input page, or localStorage is needed. Editing members hides previous results until recalculation. Styles are scoped to the calculator and do not modify the Weebly footer or surrounding page.
+Keep the existing Weebly text and these placeholders: `[foodNormActive]`, `[foodNormSed]`, `[basketsActive]`, `[basketsSed]`, `[lowActive]`, `[lowSed]`, `[highActive]`, `[highSed]`. This script fills those labels directly; it does not insert a second calculator or require new HTML. Remove any extra embed block containing the earlier standalone calculator.
+
+The script reads the existing `localStorage.people` array of `{age, sex}` objects (sex: `male` or `female`). Missing or invalid household data returns the visitor to `/`, as in the original site. Text-node replacement preserves the page's layout and event handlers. The script does not alter the Weebly footer.
 
 ## Household thresholds
 

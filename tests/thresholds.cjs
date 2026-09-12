@@ -25,3 +25,24 @@ close(all.lowSed,2*all.foodNormSed-124);
 close(all.foodNormActive,(91250+66917)/53096.57*692);
 close(all.foodNormSed,(73000+54750)/53096.57*692);
 console.log('Household thresholds, age boundaries and getResults integration passed.');
+
+// Exercise the published page's existing labels, including labels in multiple sections.
+function renderFixture(stored) {
+  const labels = Object.keys(all).map(key => ({nodeValue:`Label [${key}]`, parentElement:{closest:()=>false}}));
+  const scriptNode = {nodeValue:'[lowActive]',parentElement:{closest:()=>true}};
+  const nodes = [...labels, scriptNode];
+  let index=0;
+  const location={href:'results.html'};
+  const context=vm.createContext({
+    window:{location}, localStorage:{getItem:()=>stored},
+    document:{readyState:'complete',body:{},createTreeWalker:()=>({nextNode:()=>nodes[index++] || null})}
+  });
+  vm.runInContext(script, context);
+  return {labels,scriptNode,location};
+}
+const rendered = renderFixture(JSON.stringify(couple));
+assert.equal(rendered.location.href,'results.html');
+Object.keys(all).forEach((key,i)=>assert.equal(rendered.labels[i].nodeValue,`Label ${Math.round((all[key]+Number.EPSILON)*100)/100}${key.startsWith('baskets')?'':' ₪'}`));
+assert.equal(rendered.scriptNode.nodeValue,'[lowActive]');
+for (const data of [null,'broken','[]',JSON.stringify([{age:'',sex:'male'}])]) assert.equal(renderFixture(data).location.href,'/');
+console.log('All eight existing placeholders render; script text is preserved; missing/invalid households redirect.');
