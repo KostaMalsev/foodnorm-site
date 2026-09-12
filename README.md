@@ -1,6 +1,8 @@
 # FoodNorm Weebly results script
 
-Replace the previous calculator script in the existing results page's Custom HTML block with all of `index.html`, including the `<script>` tags. Publish the page, enter a household on the site's original input page, then open the results page.
+`foodnorm.js` is the single deployable file: plain JavaScript with no HTML or script tags.
+
+Replace the previous calculator script in the existing results page's Custom HTML block with the contents of `foodnorm.js` inside a single `<script>...</script>` block. Publish the page, enter a household on the site's original input page, then open the results page.
 
 Keep the existing Weebly text and these placeholders: `[foodNormActive]`, `[foodNormSed]`, `[basketsActive]`, `[basketsSed]`, `[lowActive]`, `[lowSed]`, `[highActive]`, `[highSed]`. This script fills those labels directly; it does not insert a second calculator or require new HTML. Remove any extra embed block containing the earlier standalone calculator.
 

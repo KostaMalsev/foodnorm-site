@@ -1,4 +1,3 @@
-<script>
 // Use the household entered on the existing site and fill its result labels.
 function renderResults() {
   let people;
@@ -21,8 +20,12 @@ function renderResults() {
   let node;
   while ((node = walker.nextNode())) {
     if (node.parentElement.closest('script, style, noscript, textarea')) continue;
+    node.nodeValue = node.nodeValue
+      .replace(/תקציב\s+מינימלי\s+למזון/g, 'תקציב מינימלי לבטחון תזונתי')
+      .replace(/סל\s+נמוך/g, 'סף נמוך (מינימום השרדותי)')
+      .replace(/סל\s+גבוה/g, 'סף גבוה (מינימום מחיה בכבוד)');
     node.nodeValue = node.nodeValue.replace(/\[(foodNormActive|foodNormSed|basketsActive|basketsSed|lowActive|lowSed|highActive|highSed)\]/g, (match, key) => {
-      return String(roundTwoDecimals(results[key])) + (key.startsWith('baskets') ? '' : ' ₪');
+      return Math.round(results[key]).toLocaleString('en-US') + (key.startsWith('baskets') ? '' : ' ₪');
     });
   }
 }
@@ -237,4 +240,3 @@ if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderResults);
   else renderResults();
 }
-</script>

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const script = fs.readFileSync('index.html', 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = fs.readFileSync('foodnorm.js', 'utf8');
 const ctx = vm.createContext({window: {addEventListener() {}}});
 vm.runInContext(script, ctx);
 const close = (a,b) => assert.ok(Math.abs(a-b)<1e-7, `${a} != ${b}`);
@@ -42,7 +42,7 @@ function renderFixture(stored) {
 }
 const rendered = renderFixture(JSON.stringify(couple));
 assert.equal(rendered.location.href,'results.html');
-Object.keys(all).forEach((key,i)=>assert.equal(rendered.labels[i].nodeValue,`Label ${Math.round((all[key]+Number.EPSILON)*100)/100}${key.startsWith('baskets')?'':' ₪'}`));
+Object.keys(all).forEach((key,i)=>assert.equal(rendered.labels[i].nodeValue,`Label ${Math.round(all[key]).toLocaleString('en-US')}${key.startsWith('baskets')?'':' ₪'}`));
 assert.equal(rendered.scriptNode.nodeValue,'[lowActive]');
 for (const data of [null,'broken','[]',JSON.stringify([{age:'',sex:'male'}])]) assert.equal(renderFixture(data).location.href,'/');
 console.log('All eight existing placeholders render; script text is preserved; missing/invalid households redirect.');
