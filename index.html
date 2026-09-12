@@ -1,31 +1,13 @@
-<div id="foodnorm-calculator" dir="rtl" lang="he">
-  <h2>מחשבון תקציב מזון למשפחה</h2>
-  <p>הוסיפו את בני המשפחה כדי לחשב תקציב חודשי למשפחה פעילה ולא פעילה.</p>
-  <form id="foodnorm-form">
-    <div id="foodnorm-people"></div>
-    <button type="button" id="foodnorm-add">הוספת בן/בת משפחה</button>
-    <button type="submit">חישוב</button>
-  </form>
-  <p id="foodnorm-message" role="status"></p>
-  <div id="foodnorm-results" hidden aria-live="polite">
-<section><h3>משפחה פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormActive">—</dd><dt>מספר סלים</dt><dd data-result="basketsActive">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowActive">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highActive">—</dd></dl></section><section><h3>משפחה לא פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormSed">—</dd><dt>מספר סלים</dt><dd data-result="basketsSed">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowSed">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highSed">—</dd></dl></section></div><p class="foodnorm-note">הסכומים חודשיים לכל המשפחה, לפי מחירי הבסיס של המודל. חישוב המזון אינו כולל ילדים מתחת לגיל שנתיים.</p></div>
-<style>
-#foodnorm-calculator {max-width:860px;margin:24px auto;padding:24px;font-family:Arial,sans-serif;color:#292929;background:#fafafa;border-radius:12px;box-sizing:border-box}
-#foodnorm-calculator * {box-sizing:border-box}
-#foodnorm-calculator h2 {margin-top:0}
-#foodnorm-calculator .foodnorm-person {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:14px 0}
-#foodnorm-calculator label {display:flex;flex-direction:column;gap:6px}
-#foodnorm-calculator input,#foodnorm-calculator select {font:inherit;padding:10px;border:1px solid #999;border-radius:5px;width:140px;background:white;color:#292929}
-#foodnorm-calculator button {font:inherit;padding:10px 16px;margin:4px 0;cursor:pointer;border:1px solid #555;border-radius:5px;background:white;color:#292929}
-#foodnorm-calculator button[type=submit] {background:#235947;color:white;border-color:#235947}
-#foodnorm-calculator #foodnorm-results:not([hidden]) {display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
-#foodnorm-calculator section {background:white;padding:20px;border:1px solid #ddd;border-radius:8px}
-#foodnorm-calculator dt {margin-top:20px;font-weight:bold}
-#foodnorm-calculator dd {margin:6px 0;font-size:1.3em}
-#foodnorm-calculator .foodnorm-note {font-size:.9em;color:#555;line-height:1.6}
-@media(max-width:540px){#foodnorm-calculator #foodnorm-results:not([hidden]){grid-template-columns:1fr}#foodnorm-calculator{padding:16px}}
-</style>
 <script>
+// Script-only Weebly embed: mount the calculator beside this script.
+if (typeof document !== 'undefined' && !document.getElementById('foodnorm-calculator')) {
+  const embedScript = document.currentScript;
+  if (embedScript && embedScript.parentNode) {
+    const host = document.createElement('div');
+    host.innerHTML = "<div id=\"foodnorm-calculator\" dir=\"rtl\" lang=\"he\">\n  <h2>מחשבון תקציב מזון למשפחה</h2>\n  <p>הוסיפו את בני המשפחה כדי לחשב תקציב חודשי למשפחה פעילה ולא פעילה.</p>\n  <form id=\"foodnorm-form\">\n    <div id=\"foodnorm-people\"></div>\n    <button type=\"button\" id=\"foodnorm-add\">הוספת בן/בת משפחה</button>\n    <button type=\"submit\">חישוב</button>\n  </form>\n  <p id=\"foodnorm-message\" role=\"status\"></p>\n  <div id=\"foodnorm-results\" hidden aria-live=\"polite\">\n<section><h3>משפחה פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result=\"foodNormActive\">—</dd><dt>מספר סלים</dt><dd data-result=\"basketsActive\">—</dd><dt>סל נמוך (ZL)</dt><dd data-result=\"lowActive\">—</dd><dt>סל גבוה (ZU)</dt><dd data-result=\"highActive\">—</dd></dl></section><section><h3>משפחה לא פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result=\"foodNormSed\">—</dd><dt>מספר סלים</dt><dd data-result=\"basketsSed\">—</dd><dt>סל נמוך (ZL)</dt><dd data-result=\"lowSed\">—</dd><dt>סל גבוה (ZU)</dt><dd data-result=\"highSed\">—</dd></dl></section></div><p class=\"foodnorm-note\">הסכומים חודשיים לכל המשפחה, לפי מחירי הבסיס של המודל. חישוב המזון אינו כולל ילדים מתחת לגיל שנתיים.</p></div>\n<style>\n#foodnorm-calculator {max-width:860px;margin:24px auto;padding:24px;font-family:Arial,sans-serif;color:#292929;background:#fafafa;border-radius:12px;box-sizing:border-box}\n#foodnorm-calculator * {box-sizing:border-box}\n#foodnorm-calculator h2 {margin-top:0}\n#foodnorm-calculator .foodnorm-person {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:14px 0}\n#foodnorm-calculator label {display:flex;flex-direction:column;gap:6px}\n#foodnorm-calculator input,#foodnorm-calculator select {font:inherit;padding:10px;border:1px solid #999;border-radius:5px;width:140px;background:white;color:#292929}\n#foodnorm-calculator button {font:inherit;padding:10px 16px;margin:4px 0;cursor:pointer;border:1px solid #555;border-radius:5px;background:white;color:#292929}\n#foodnorm-calculator button[type=submit] {background:#235947;color:white;border-color:#235947}\n#foodnorm-calculator #foodnorm-results:not([hidden]) {display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}\n#foodnorm-calculator section {background:white;padding:20px;border:1px solid #ddd;border-radius:8px}\n#foodnorm-calculator dt {margin-top:20px;font-weight:bold}\n#foodnorm-calculator dd {margin:6px 0;font-size:1.3em}\n#foodnorm-calculator .foodnorm-note {font-size:.9em;color:#555;line-height:1.6}\n@media(max-width:540px){#foodnorm-calculator #foodnorm-results:not([hidden]){grid-template-columns:1fr}#foodnorm-calculator{padding:16px}}\n</style>\n";
+    embedScript.parentNode.insertBefore(host, embedScript);
+  }
+}
 function init() {
   const root = document.getElementById('foodnorm-calculator');
   if (!root || root.dataset.initialized) return;
