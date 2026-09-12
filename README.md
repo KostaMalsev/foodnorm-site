@@ -1,8 +1,8 @@
-# FoodNorm Weebly results embed
+# FoodNorm single-page Weebly calculator
 
-Paste the complete contents of `index.html` into the results page's Embed Code block, beneath the result text. The page must include the existing `[foodNormActive]`, `[foodNormSed]`, `[basketsActive]`, `[basketsSed]`, `[lowActive]`, `[lowSed]`, `[highActive]`, and `[highSed]` placeholders.
+Paste the entire `index.html` into one Weebly Embed Code block. It contains the household form, both result columns, styles, and all formulas. Remove the old separate result text/placeholders and old calculator script from that page to avoid duplicate displays.
 
-The script reads `people` from localStorage as an array of `{age, sex}` objects; sex is `male` or `female` and age is in completed years.
+Visitors add household members and calculate on the same page. No redirect, separate input page, or localStorage is needed. Editing members hides previous results until recalculation. Styles are scoped to the calculator and do not modify the Weebly footer or surrounding page.
 
 ## Household thresholds
 
