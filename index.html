@@ -1,63 +1,64 @@
+<div id="foodnorm-calculator" dir="rtl" lang="he">
+  <h2>מחשבון תקציב מזון למשפחה</h2>
+  <p>הוסיפו את בני המשפחה כדי לחשב תקציב חודשי למשפחה פעילה ולא פעילה.</p>
+  <form id="foodnorm-form">
+    <div id="foodnorm-people"></div>
+    <button type="button" id="foodnorm-add">הוספת בן/בת משפחה</button>
+    <button type="submit">חישוב</button>
+  </form>
+  <p id="foodnorm-message" role="status"></p>
+  <div id="foodnorm-results" hidden aria-live="polite">
+<section><h3>משפחה פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormActive">—</dd><dt>מספר סלים</dt><dd data-result="basketsActive">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowActive">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highActive">—</dd></dl></section><section><h3>משפחה לא פעילה</h3><dl><dt>תקציב מינימלי למזון</dt><dd data-result="foodNormSed">—</dd><dt>מספר סלים</dt><dd data-result="basketsSed">—</dd><dt>סל נמוך (ZL)</dt><dd data-result="lowSed">—</dd><dt>סל גבוה (ZU)</dt><dd data-result="highSed">—</dd></dl></section></div><p class="foodnorm-note">הסכומים חודשיים לכל המשפחה, לפי מחירי הבסיס של המודל. חישוב המזון אינו כולל ילדים מתחת לגיל שנתיים.</p></div>
+<style>
+#foodnorm-calculator {max-width:860px;margin:24px auto;padding:24px;font-family:Arial,sans-serif;color:#292929;background:#fafafa;border-radius:12px;box-sizing:border-box}
+#foodnorm-calculator * {box-sizing:border-box}
+#foodnorm-calculator h2 {margin-top:0}
+#foodnorm-calculator .foodnorm-person {display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:14px 0}
+#foodnorm-calculator label {display:flex;flex-direction:column;gap:6px}
+#foodnorm-calculator input,#foodnorm-calculator select {font:inherit;padding:10px;border:1px solid #999;border-radius:5px;width:140px;background:white;color:#292929}
+#foodnorm-calculator button {font:inherit;padding:10px 16px;margin:4px 0;cursor:pointer;border:1px solid #555;border-radius:5px;background:white;color:#292929}
+#foodnorm-calculator button[type=submit] {background:#235947;color:white;border-color:#235947}
+#foodnorm-calculator #foodnorm-results:not([hidden]) {display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+#foodnorm-calculator section {background:white;padding:20px;border:1px solid #ddd;border-radius:8px}
+#foodnorm-calculator dt {margin-top:20px;font-weight:bold}
+#foodnorm-calculator dd {margin:6px 0;font-size:1.3em}
+#foodnorm-calculator .foodnorm-note {font-size:.9em;color:#555;line-height:1.6}
+@media(max-width:540px){#foodnorm-calculator #foodnorm-results:not([hidden]){grid-template-columns:1fr}#foodnorm-calculator{padding:16px}}
+</style>
 <script>
-
 function init() {
-  
-  renderResults();
-
-  
-  document.querySelector('#weebly-footer-signup-container-v3').remove();
-
-}
-
-
-function renderResults() {
-  
-  let people = localStorage.getItem('people');
-  
-  if (!people) {
-    
-    window.location.href = '/';
-    
-    return;
-    
+  const root = document.getElementById('foodnorm-calculator');
+  if (!root || root.dataset.initialized) return;
+  root.dataset.initialized = 'true';
+  const peopleEl = root.querySelector('#foodnorm-people');
+  const resultsEl = root.querySelector('#foodnorm-results');
+  const message = root.querySelector('#foodnorm-message');
+  const invalidate = () => { resultsEl.hidden = true; message.textContent = ''; };
+  function addPerson() {
+    const row = document.createElement('div');
+    row.className = 'foodnorm-person';
+    row.innerHTML = '<label>גיל בשנים מלאות<input type="number" min="0" step="1" required aria-label="גיל בשנים מלאות"></label><label>מין<select><option value="male">זכר</option><option value="female">נקבה</option></select></label><button type="button">הסרה</button>';
+    row.querySelector('button').addEventListener('click', () => { row.remove(); invalidate(); });
+    peopleEl.appendChild(row);
+    invalidate();
   }
-  
-  
-  people = JSON.parse(people);
-  
-  
-  const results = getResults(people);
-  
-  const wrapperEl = document.querySelector('.wsite-section');
-  
-  
-  Object.entries(results).forEach(([key, result]) => {
-        
-    // @@debug
-    if (result === undefined) {
-      
-      result = '?';
-      
-    } else {
-      
-      result = roundTwoDecimals(result);
-      
-    }
-    
-    if (!key.startsWith('baskets')) {
-    
-      result += '₪';
-      
-    }
-    
-    wrapperEl.innerHTML = wrapperEl.innerHTML.replaceAll('[' + key + ']', result);
-    
+  root.querySelector('#foodnorm-add').addEventListener('click', addPerson);
+  peopleEl.addEventListener('input', invalidate);
+  peopleEl.addEventListener('change', invalidate);
+  root.querySelector('form').addEventListener('submit', event => {
+    event.preventDefault();
+    invalidate();
+    const people = Array.from(peopleEl.children, row => ({age:Number(row.querySelector('input').value),sex:row.querySelector('select').value}));
+    if (!people.length) { message.textContent = 'יש להוסיף לפחות בן/בת משפחה אחד/ת.'; return; }
+    const results = getResults(people);
+    root.querySelectorAll('[data-result]').forEach(el => {
+      const key = el.dataset.result;
+      el.textContent = new Intl.NumberFormat('he-IL', {maximumFractionDigits:2}).format(results[key]) + (key.startsWith('baskets') ? '' : ' ₪');
+    });
+    resultsEl.hidden = false;
   });
-  
+  addPerson();
 }
-
-
-
 function getResults(people) {
   
   // find sum
@@ -139,12 +140,113 @@ function getResults(people) {
     foodNormActive,
     foodNormSed,
     basketsActive,
-    basketsSed
+    basketsSed,
+    ...getHouseholdThresholds(people, foodNormActive, foodNormSed)
   };
   
 }
 
 
+
+// Coefficients from KostaMalsev/economic_food run.py.
+// Order: intercept, then min1 (male), min2 (female) for each age group.
+// Regression age groups differ from the calorie-intake groups below.
+const regressionAgeMaxima = [4, 9, 14, 17, 29, 49, Infinity];
+const regressionWeights = {
+  "active_zl_weights": [
+    176.4827575,
+    95.91524586,
+    384.5782373,
+    250.5918009,
+    164.2829614,
+    128.3428789,
+    208.2338264,
+    313.5189142,
+    290.7941503,
+    56.66946114,
+    289.0340474,
+    152.2557543,
+    775.2361008,
+    412.9771015,
+    616.6631982
+  ],
+  "active_zu_weights": [
+    3097.0054841,
+    1778.3197479,
+    2605.5969925,
+    3687.3931666,
+    2312.422585,
+    3060.8969612,
+    2898.5661122,
+    2341.0918063,
+    4116.1657006,
+    3508.5692799,
+    4451.6304668,
+    4202.0822921,
+    5705.0959602,
+    3561.6220116,
+    4707.0973191
+  ],
+  "sedentary_zl_weights": [
+    5.684342e-13,
+    0,
+    -124,
+    -68.5,
+    1342,
+    0,
+    0,
+    283,
+    979,
+    -4.583e-13,
+    206,
+    124,
+    0,
+    0,
+    0
+  ],
+  "sedentary_zu_weights": [
+    3467.7127111,
+    2060.1814015,
+    2533.9932615,
+    3205.0854474,
+    1343.1611015,
+    182.1488577,
+    2834.3453616,
+    5978.3193323,
+    1850.2039152,
+    2984.0997578,
+    1980.4124585,
+    4274.668595,
+    6407.2484325,
+    5433.0485529,
+    3862.4569651
+  ]
+};
+
+function getHouseholdThresholds(people, foodNormActive, foodNormSed) {
+  const counts = Array(14).fill(0);
+  people.forEach(({age, sex}) => {
+    const numericAge = Number(age);
+    if (!Number.isInteger(numericAge) || numericAge < 0 ||
+        (sex !== 'male' && sex !== 'female')) {
+      throw new Error('Household members need a non-negative integer age and male/female sex.');
+    }
+    const group = regressionAgeMaxima.findIndex(max => numericAge <= max);
+    counts[group * 2 + (sex === 'female' ? 1 : 0)] += 1;
+  });
+
+  // Add the intercept once per household, not once per person.
+  const predict = weights => counts.reduce(
+    (total, count, index) => total + count * weights[index + 1], weights[0]
+  );
+  return {
+    // Both lower regressions predict food spending, which must be converted to ZL.
+    lowActive: 2 * foodNormActive - predict(regressionWeights.active_zl_weights),
+    lowSed: 2 * foodNormSed - predict(regressionWeights.sedentary_zl_weights),
+    highActive: predict(regressionWeights.active_zu_weights),
+    highSed: predict(regressionWeights.sedentary_zu_weights)
+  };
+}
 
 // monthlyCalorieIntakes (FDA data)
 const monthlyCalorieIntake = {"child":[{"age":{"min":2,"max":3},"intake":{"sed":30417,"active":42583}}],"female":[{"age":{"min":4,"max":8},"intake":{"sed":36500,"active":54750}},{"age":{"min":9,"max":13},"intake":{"sed":48667,"active":66917}},{"age":{"min":14,"max":18},"intake":{"sed":54750,"active":73000}},{"age":{"min":19,"max":30},"intake":{"sed":60833,"active":73000}},{"age":{"min":31,"max":50},"intake":{"sed":54750,"active":66917}},{"age":{"min":51},"intake":{"sed":48667,"active":66917}}],"male":[{"age":{"min":4,"max":8},"intake":{"sed":42583,"active":60833}},{"age":{"min":9,"max":13},"intake":{"sed":54750,"active":79083}},{"age":{"min":14,"max":18},"intake":{"sed":66917,"active":97333}},{"age":{"min":19,"max":30},"intake":{"sed":73000,"active":91250}},{"age":{"min":31,"max":50},"intake":{"sed":73000,"active":91250}},{"age":{"min":51},"intake":{"sed":66917,"active":85167}}]};
@@ -162,63 +264,9 @@ function roundTwoDecimals(num) {
 }
 
 
-window.addEventListener('load', init);
 
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}
 </script>
-
-
-
-<style>
-
-#wsite-title {
-  font-size: 30px !important;
-}
-
-h2 {
-  font-weight: 600;
-}
-
-.wsite-button-inner {
-  font-weight: 600 !important;
-}
-
-
-.cento-header .nav-wrap {
-  display: none;
-}
-
-.footer-wrap {
-  display: none;
-}
-
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro-Semibold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Simpler';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('https://assets.codepen.io/3537853/SimplerPro_H-Bold.woff2') format('woff2');
-}
-
-*, #wsite-title {
-  font-family: 'Simpler', 'Quattrocento', system-ui !important;
-  letter-spacing: normal !important;
-}
-
-</style>
